@@ -19,6 +19,7 @@ public class KafkaProducerApplication {
 		SpringApplication.run(KafkaProducerApplication.class, args);
 	}
 	
+	/* Calling producer method to publish data on application start */
 	@EventListener(ApplicationReadyEvent.class)
 	public void publishData() {
 		producer.publishToTopic();

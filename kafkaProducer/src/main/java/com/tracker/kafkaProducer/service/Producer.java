@@ -2,29 +2,34 @@ package com.tracker.kafkaProducer.service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.tracker.kafkaProducer.config.AppConfig;
+
 @Service
 public class Producer {
-	public static final String topic = "tracker";
 	
 	@Autowired
-	private KafkaTemplate<String, String> kafkaTemp;
+	private KafkaTemplate<String, String> kafkaTemplate;
 	
+	/* Reads GPS data from CSV and publishes it to a topic */
 	public void publishToTopic() {
 		try {			
-			String filePath = System.getProperty("user.dir") + "/data/cycle_gpx.csv";
+			String filePath = System.getProperty("user.dir") + AppConfig.filePath;
 
-	        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+	        // reading CSV file
+			try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
 	            String line;
 	            while ((line = br.readLine()) != null) {
 	            	System.out.println("Publishing data = " + line);
-	            	this.kafkaTemp.send(topic, line);
-	            	 Thread.sleep(100);
+	            	
+	            	// publishing data to Kafka topic
+	            	this.kafkaTemplate.send(AppConfig.topicName, line);
+	            	
+	            	// waiting for some time before publishing next set of data
+	            	Thread.sleep(100);
 	            }
 	        }
 			
@@ -32,11 +37,4 @@ public class Producer {
 			System.out.println("Exception " + ex.getMessage());
 		}		
 	}
-	
-	@Bean
-    public NewTopic createKafkaTopic() {
-         return new NewTopic(topic, 1, (short) 1);
-    }
-	
-
 }

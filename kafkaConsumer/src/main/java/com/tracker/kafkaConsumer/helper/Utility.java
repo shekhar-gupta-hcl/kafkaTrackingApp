@@ -1,51 +1,41 @@
 package com.tracker.kafkaConsumer.helper;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 
+import com.tracker.kafkaConsumer.model.LocationData;
+
 @Service
 public class Utility {
-	public long calculateTravelTime(String currentDateTime, String initialDateTime) {
-		long totalTimeTravelled = 0;
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date initialDate = sdf.parse(initialDateTime);
-			Date currentDate = sdf.parse(currentDateTime);
-			
-			totalTimeTravelled = currentDate.getTime() - initialDate.getTime();
-			
-		}catch(Exception ex) {
-			System.out.println(ex.getMessage());	
-		}
+	
+	/* Calculates total time traveled between two latitude and longitude points
+	 * @param LocationData locationData
+	 * @param LocationData prevLocationData
+	 * @return double totalTravelTime 
+	 */
+	public long calculateTravelTime(LocationData locationData, LocationData prevLocationData) {
+		long timeDifference = locationData.getTime() - prevLocationData.getTime();
+		timeDifference = TimeUnit.MILLISECONDS.toSeconds(timeDifference);
+		long totalTravelTime = prevLocationData.getTravelTime() + timeDifference ;
+		return totalTravelTime;
 		
-		return TimeUnit.MILLISECONDS.toSeconds(totalTimeTravelled);
-	}
-
-
-	@SuppressWarnings("serial")
-	public Map<String, String> cleanData(String trackingData) {
-		String[] data = trackingData.split(",");
-		
-		Map<String, String> trackingDataValues = new HashMap<String, String>() {{
-	        put("latitude", data[0].trim());
-	        put("longitude", data[1].trim());
-	        put("time", data[2].trim());
-	    }};
-
-		return trackingDataValues;
-
 	}
 	
-	public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-		lon1 = Math.toRadians(lon1);
-		lon2 = Math.toRadians(lon2);
-		lat1 = Math.toRadians(lat1);
-		lat2 = Math.toRadians(lat2);
+	/* Calculates total distance covered between two latitude and longitude points
+	 * @param LocationData locationData
+	 * @param LocationData prevLocationData
+	 * @return double totalDistanceTraveled 
+	 */
+	public double calculateDistance(LocationData locationData, LocationData prevLocationData) {
+		double lon1 = Math.toRadians(locationData.getLongitude());
+		double lon2 = Math.toRadians(prevLocationData.getLongitude());
+		double lat1 = Math.toRadians(locationData.getLatitude());
+		double lat2 = Math.toRadians(prevLocationData.getLatitude());
 
 		double dlon = lon2 - lon1;
 		double dlat = lat2 - lat1;
@@ -54,7 +44,51 @@ public class Utility {
 		double c = 2 * Math.asin(Math.sqrt(a));
 
 		double r = 6371;
-		return (c * r);
+		
+		double totalDistanceTraveled = prevLocationData.getDistanceTraveled() + (c * r);
+		return totalDistanceTraveled;
 	}
+
+	/* Utility method to convert date time into epoch milliseconds
+	 * @param String dateTime
+	 * @return long timeInMillis 
+	 */
+	public long convertTimeToMillis(String dateTime) {
+		long timeInMillis = 0;
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = sdf.parse(dateTime);			
+			timeInMillis = date.getTime();
+			
+		}catch(Exception ex) {
+			System.out.println(ex.getMessage());	
+		}	
+		return timeInMillis;
+	}
+	
+	/* Method to build location data model object
+	 * @param String data
+	 * @return LocationData locationData 
+	 */
+	public LocationData getLocationData(String data) {
+		LocationData locationData = new LocationData();
+		
+		try {
+			List<String> trackingDataPoints = Arrays.asList(data.split(","));
+			
+			Double latitude = Double.valueOf(trackingDataPoints.get(0).trim());
+			Double longitude = Double.valueOf(trackingDataPoints.get(1).trim());
+			long time = convertTimeToMillis(trackingDataPoints.get(2).trim());
+			
+			locationData.setLatitude(latitude);
+			locationData.setLongitude(longitude);
+			locationData.setTime(time);
+			
+		}catch(Exception ex) {
+			System.out.println(ex.getStackTrace());
+		}
+		return locationData;
+	}
+
 
 }

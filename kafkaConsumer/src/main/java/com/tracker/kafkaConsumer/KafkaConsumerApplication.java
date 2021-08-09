@@ -18,6 +18,7 @@ public class KafkaConsumerApplication {
 		SpringApplication.run(KafkaConsumerApplication.class, args);
 	}
 	
+	/* Calling consumer method to consume data on application start */
 	@EventListener(ApplicationReadyEvent.class)
 	public void consumeData() {
 		consumer.consumeMessage();
