@@ -15,7 +15,7 @@ Steps
 4. Open another cmd prompt and Go to folder kafkaConsumer, cmd --> 
    cd kafkaConsumer
 5. Run the kafka consumer app, cmd --> mvn spring-boot:run
-6. Open another cmd prompt and Go to folder kafkaProducer, cmd --> cd kafkaConsumer
+6. Open another cmd prompt and Go to folder kafkaProducer, cmd --> cd kafkaProducer
 7. Run the kafka producer app, cmd --> mvn spring-boot:run
 
 You can notice that as tracking data is published by producer from the test csv file, distance and time is calculated and displayed in consumer console.
