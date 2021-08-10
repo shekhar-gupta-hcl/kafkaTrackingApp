@@ -37,4 +37,13 @@ public class LocationData {
 	public void setTime(long time) {
 		this.time = time;
 	}
+	
+	 @Override public String toString() {
+		   return "Location(" + travelTime + ", " + distanceTraveled + ")";
+		 }
+	
+	public void update(LocationData latestLocationData) {
+		this.distanceTraveled = latestLocationData.getDistanceTraveled();
+		this.travelTime = latestLocationData.getTravelTime();
+	}
 }

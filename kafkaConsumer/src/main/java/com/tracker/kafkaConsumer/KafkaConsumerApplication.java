@@ -10,14 +10,14 @@ import com.tracker.kafkaConsumer.service.StreamConsumer;
 
 @SpringBootApplication
 public class KafkaConsumerApplication {
-	
+
 	@Autowired
 	private StreamConsumer consumer;
 
 	public static void main(String[] args) {
 		SpringApplication.run(KafkaConsumerApplication.class, args);
 	}
-	
+
 	/* Calling consumer method to consume data on application start */
 	@EventListener(ApplicationReadyEvent.class)
 	public void consumeData() {
