@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import com.tracker.kafkaConsumer.config.AppConfig;
 import com.tracker.kafkaConsumer.helper.Utility;
 import com.tracker.kafkaConsumer.model.LocationData;
+import com.tracker.kafkaConsumer.model.TravelData;
+import com.tracker.kafkaConsumer.seredes.AppSerede;
 import com.tracker.kafkaConsumer.seredes.SeredeFactory;
 
 @Service
@@ -57,29 +59,34 @@ public class StreamConsumer {
 			KStream<String, LocationData> kstreamValues = kstream
 					.map((k, v) -> new KeyValue<>("location", transformTrackingData(v)));
 		
-			KGroupedStream<String,LocationData> kGroupStream = kstreamValues.groupByKey(Serialized.with(Serdes.String(), SeredeFactory.TrackLocation()));
+			KGroupedStream<String,LocationData> kGroupStream = kstreamValues.groupByKey(Serialized.with(Serdes.String(), AppSerede.LocationData()));
 			
 			
-			KTable<String,LocationData> kTable = kGroupStream
+			KTable<String,TravelData> kTable = kGroupStream
 					 .aggregate(
-		                        () -> new LocationData(),
-		                        (dateTime, latestLocationData, locationData) -> {
-		                        	locationData.update(latestLocationData);
-		                        	System.out.print("Total Travel time is :" + latestLocationData.getTravelTime()
-		                			+ " seconds and Total Distance Covered is : " + latestLocationData.getDistanceTraveled() + " km \n");
-		                            return locationData;
-		                        },
-		                        Materialized.<String,LocationData,KeyValueStore<Bytes, byte[]>>
+				                ()-> new TravelData()
+				                .withTotalTime(0)
+				                .withTotalDistance(0),
+		                        (k,v,aggValue) -> { 
+		                          System.out.println(aggValue);
+                                  return new TravelData()
+		                            .withTotalTime(aggValue.getTotalTravelTime()+v.getTravelTime())
+		                            .withTotalDistance(aggValue.getTotalDistanceTraveled() + v.getDistanceTraveled());
+		                        },		                        	
+		                        Materialized.<String,TravelData,KeyValueStore<Bytes, byte[]>>
 		                                        as("location_data_aggregate")
 		                                        .withKeySerde(Serdes.String())
-		                                                .withValueSerde(SeredeFactory.TrackLocation())
+		                                                .withValueSerde(AppSerede.TravelData())
 		                );
-			kTable.toStream().print(Printed.<String, LocationData>toSysOut());
+			
+			kTable.toStream().print(Printed.<String, TravelData>toSysOut());
 			
 			Topology topology = streamBuilder.build();
 			KafkaStreams streams = new KafkaStreams(topology, props);
 
 			System.out.println("Starting the stream");
+			streams.cleanUp();
+
 			streams.start();
 
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {

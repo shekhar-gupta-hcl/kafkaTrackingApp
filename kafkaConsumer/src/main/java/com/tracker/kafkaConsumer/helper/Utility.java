@@ -23,7 +23,7 @@ public class Utility {
 		long timeDifference = locationData.getTime() - prevLocationData.getTime();
 		timeDifference = TimeUnit.MILLISECONDS.toSeconds(timeDifference);
 		long totalTravelTime = prevLocationData.getTravelTime() + timeDifference;
-		return totalTravelTime;
+		return timeDifference;
 
 	}
 
@@ -48,7 +48,7 @@ public class Utility {
 		double r = 6371;
 
 		double totalDistanceTraveled = prevLocationData.getDistanceTraveled() + (c * r);
-		return totalDistanceTraveled;
+		return (c * r);
 	}
 
 	/*

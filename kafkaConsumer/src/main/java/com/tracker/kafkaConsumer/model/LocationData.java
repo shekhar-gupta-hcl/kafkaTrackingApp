@@ -1,10 +1,36 @@
 package com.tracker.kafkaConsumer.model;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({
+    "travelTime",
+    "distanceTraveled",
+    "latitude",
+    "longitude",
+    "time"
+})
+
 public class LocationData {
+	@JsonProperty("travelTime")
 	private long travelTime;
+	
+	@JsonProperty("distanceTraveled")
 	private double distanceTraveled;
+	
+	@JsonProperty("latitude")
 	private double latitude;
+	
+	@JsonProperty("longitude")
 	private double longitude;
+	
+	@JsonProperty("time")
 	private long time;
 	
 	public long getTravelTime() {
@@ -46,4 +72,15 @@ public class LocationData {
 		this.distanceTraveled = latestLocationData.getDistanceTraveled();
 		this.travelTime = latestLocationData.getTravelTime();
 	}
+	
+    public LocationData withTotalTime(long time) {
+        this.travelTime = time;
+        return this;
+    }
+    
+    public LocationData withTotalDistance(double distance) {
+        this.distanceTraveled = distance;
+        return this;
+    }
+   
 }
